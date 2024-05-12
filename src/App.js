@@ -26,10 +26,10 @@ function App() {
               }}
             >
               <Button startDecorator={<Add />}>Add Item</Button>
-              <Button disabled startDecorator={<Save />}>
+              <Button color="success" startDecorator={<Save />}>
                 Save
               </Button>
-              <Button>Exit & Cancel</Button>
+              <Button color="danger">Exit & Cancel</Button>
             </Box>
           </Box>
           <SearchBox />

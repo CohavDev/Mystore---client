@@ -1,7 +1,33 @@
 import Table from "@mui/joy/Table";
 import TableItem from "./tableItem";
+import { useEffect, useState } from "react";
+import loadData from "../services/loadData";
 
-export default function storeTable() {
+export default function StoreTable() {
+  const [data, setData] = useState();
+  const [itemsArray, setArray] = useState([]);
+  useEffect(() => {
+    loadData().then((data) => {
+      setData(data);
+    });
+  }, []);
+  useEffect(() => {
+    setArray([]);
+    for (const item in data) {
+      console.log("adding item");
+      setArray([
+        ...itemsArray,
+        <TableItem
+          id={1}
+          name="Frozen Yougurt"
+          desc="Im tasty!"
+          catalogNumber={4}
+          type="food"
+          marketDate="2024-05-11"
+        ></TableItem>,
+      ]);
+    }
+  }, [data]);
   return (
     <Table aria-label="basic table" stickyHeader hoverRow>
       <thead>
@@ -16,7 +42,8 @@ export default function storeTable() {
         </tr>
       </thead>
       <tbody>
-        <TableItem
+        {itemsArray}
+        {/* <TableItem
           id={1}
           name="Frozen Yougurt"
           desc="Im tasty!"
@@ -47,7 +74,7 @@ export default function storeTable() {
           catalogNumber={4}
           type="food"
           marketDate="1-1-2024"
-        />
+        /> */}
       </tbody>
     </Table>
   );
