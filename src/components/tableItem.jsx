@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Input from "@mui/joy/Input";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Textarea from "@mui/joy/Textarea";
-import { Edit, Delete, Close } from "@mui/icons-material";
+import { Edit, Delete, Close, DeleteForever, Add } from "@mui/icons-material";
 import IconButton from "@mui/joy/IconButton";
 import { Box } from "@mui/joy";
 
@@ -15,9 +15,66 @@ export default function TableItem(props) {
   const [type, setType] = useState(props.type);
   const [marketDate, setDate] = useState(props.marketDate);
   const [editEnabled, setEdit] = useState(false);
-  useEffect(() => {});
+  const [onlineData, setOnlineData] = useState(props); // a copy of the data that is updated on the server's DB
+  const [isModified, setModified] = useState(false);
+  const [isDeleted, setDelete] = useState(false);
+  const mountedRef = useRef();
+
+  const getItem = () => {
+    return {
+      _id: props._id,
+      name: name,
+      desc: desc,
+      catalogNumber: catalogNumber,
+      type: type,
+      marketDate: marketDate,
+    };
+  };
+  useEffect(() => {
+    if (!mountedRef.current) {
+      return;
+    }
+    if (
+      onlineData.name !== name ||
+      onlineData.desc !== desc ||
+      onlineData.catalogNumber != catalogNumber ||
+      onlineData.type !== type ||
+      onlineData.marketDate !== marketDate
+    ) {
+      setModified(true);
+      props.notifyModifiedEdit(props._id, getItem());
+      console.log("notify edit");
+    } else {
+      setModified(false);
+      props.abortModifiedEdit(props._id);
+      console.log("notify abort edit");
+    }
+  }, [name, desc, catalogNumber, type, marketDate]);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      return;
+    }
+    if (isDeleted) {
+      props.deleteItem(props._id, getItem);
+    } else {
+      props.abortDeleteItem(props._id);
+    }
+  }, [isDeleted]);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+  }, []);
   return (
-    <tr>
+    <tr
+      style={{
+        transition: "all .5s ease",
+        WebkitTransition: "all .5s ease",
+        MozTransition: "all .5s ease",
+        backgroundColor: isDeleted ? "red" : isModified ? "orange" : "white",
+      }}
+    >
       {/* id -  read only */}
       <td>{props.id}</td>
       <td>
@@ -27,7 +84,7 @@ export default function TableItem(props) {
             placeholder="Item name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            slotProps={{ input: { maxlength: 50 } }}
+            slotProps={{ input: { maxLength: 50 } }}
           />
         ) : (
           name
@@ -62,7 +119,11 @@ export default function TableItem(props) {
       </td>
       <td>
         {editEnabled ? (
-          <Select defaultValue={type}>
+          <Select
+            placeholder="Select Type"
+            defaultValue={type}
+            onChange={(event, newValue) => setType(newValue)}
+          >
             <Option value="vagetable">Vagetable</Option>
             <Option value="fruit">Fruit</Option>
             <Option value="fieldCrops">Field Crops</Option>
@@ -87,8 +148,8 @@ export default function TableItem(props) {
           <IconButton onClick={() => setEdit(!editEnabled)}>
             {editEnabled ? <Close /> : <Edit />}
           </IconButton>
-          <IconButton>
-            <Delete />
+          <IconButton onClick={() => setDelete(!isDeleted)}>
+            {isDeleted ? <Add /> : <Delete />}
           </IconButton>
         </Box>
       </td>

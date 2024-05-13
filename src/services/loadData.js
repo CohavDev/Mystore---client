@@ -1,5 +1,5 @@
 import axios from "axios";
-export default async function loadData() {
+export default async function loadDataAPI() {
   const serverURL = "http://localhost:5038";
   console.log("loading data from server, port 5038");
 

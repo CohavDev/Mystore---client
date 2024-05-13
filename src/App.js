@@ -3,9 +3,14 @@ import SearchBox from "./components/searchBox";
 import StoreTable from "./components/storeTable";
 import logo from "./logo.svg";
 import { Add, Save } from "@mui/icons-material";
+import { useState } from "react";
 // import "./App.css";
 
 function App() {
+  const [isModified, setModified] = useState(false);
+  const [saveClick, toggleSave] = useState(false);
+  const [cancelClick, toggleCancel] = useState(false);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -26,14 +31,25 @@ function App() {
               }}
             >
               <Button startDecorator={<Add />}>Add Item</Button>
-              <Button color="success" startDecorator={<Save />}>
+              <Button
+                disabled={!isModified}
+                color="success"
+                startDecorator={<Save />}
+                onClick={() => toggleSave(!saveClick)}
+              >
                 Save
               </Button>
-              <Button color="danger">Exit & Cancel</Button>
+              <Button color="danger" onClick={() => toggleCancel(!cancelClick)}>
+                Exit & Cancel
+              </Button>
             </Box>
           </Box>
           <SearchBox />
-          <StoreTable />
+          <StoreTable
+            saveClick={saveClick}
+            cancelClick={cancelClick}
+            setModified={(change) => setModified(change)}
+          />
         </div>
       </header>
     </div>
