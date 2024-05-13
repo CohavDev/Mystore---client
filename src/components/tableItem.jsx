@@ -3,7 +3,7 @@ import Input from "@mui/joy/Input";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Textarea from "@mui/joy/Textarea";
-import { Edit, Delete, Add, Done } from "@mui/icons-material";
+import { Edit, Delete, Add, Done, Warning } from "@mui/icons-material";
 import IconButton from "@mui/joy/IconButton";
 import { Box } from "@mui/joy";
 
@@ -19,9 +19,9 @@ export default function TableItem(props) {
   const [isModified, setModified] = useState(false);
   const [isDeleted, setDelete] = useState(false);
   const [newItem, setNew] = useState(false);
+  const [formWarning, setWarning] = useState(false);
   const mountedRef = useRef();
   const mountedRef2 = useRef();
-
   const getItem = () => {
     return {
       _id: props._id,
@@ -49,7 +49,9 @@ export default function TableItem(props) {
     if (!mountedRef.current) {
       return;
     }
-
+    const warn = name === "" || catalogNumber == undefined;
+    setWarning(warn);
+    props.formWarn(warn);
     if (
       onlineData.name !== name ||
       onlineData.desc !== desc ||
@@ -105,7 +107,7 @@ export default function TableItem(props) {
       <td>
         {editEnabled ? (
           <Input
-            required
+            required={true}
             placeholder="Item name"
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -170,8 +172,14 @@ export default function TableItem(props) {
       </td>
       <td>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          <IconButton onClick={() => setEdit(!editEnabled)}>
-            {editEnabled ? <Done /> : <Edit />}
+          <IconButton type="submit" onClick={() => setEdit(!editEnabled)}>
+            {formWarning ? (
+              <Warning color="danger" />
+            ) : editEnabled ? (
+              <Done />
+            ) : (
+              <Edit />
+            )}
           </IconButton>
           <IconButton onClick={() => setDelete(!isDeleted)}>
             {isDeleted ? <Add /> : <Delete />}

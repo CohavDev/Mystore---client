@@ -63,6 +63,7 @@ export default function StoreTable(props) {
       <TableItem
         newItem={true}
         isUpdated={isUIUpdated}
+        formWarn={(warn) => props.formWarnCallback(warn)}
         _id={tempId}
         key={visualId}
         id={visualId} //id for visual order only
@@ -180,6 +181,7 @@ export default function StoreTable(props) {
     if (!mountedRef.current) {
       return;
     }
+    console.log("setting array");
     setArray([]);
     let tempArray = [];
     let visualId = 0;
@@ -189,6 +191,7 @@ export default function StoreTable(props) {
       tempArray.push(
         <TableItem
           isUpdated={isUIUpdated}
+          formWarn={(warn) => props.formWarnCallback(warn)}
           key={visualId}
           id={visualId} //id for visual order only
           _id={item["_id"]} //internal id - unique!
@@ -203,7 +206,7 @@ export default function StoreTable(props) {
           abortModifiedEdit={(_id) => deleteEditArrayCallback(_id)}
         ></TableItem>
       );
-      setArray(tempArray);
+      setArray([...tempArray]);
     }
   }, [data]);
   useEffect(() => {

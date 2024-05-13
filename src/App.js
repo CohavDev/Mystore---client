@@ -5,6 +5,7 @@ import AlertDialogModal from "./components/modalCancel";
 import logo from "./logo.svg";
 import { Add, Save } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import { Typography } from "@mui/material";
 // import "./App.css";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [newItemClick, setNewClick] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [searchData, setSearchData] = useState({});
+  const [formWarn, setFormWarn] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -64,7 +66,7 @@ function App() {
                   </Button>
                   <Button
                     loading={isLoading}
-                    disabled={!isModified}
+                    disabled={!isModified || formWarn}
                     color="success"
                     startDecorator={<Save />}
                     onClick={() => toggleSave(true)}
@@ -75,6 +77,12 @@ function App() {
                 </Box>
               </Box>
               <SearchBox callBackSetData={setSearchData} />
+              <Typography fontSize={14} color={"red"}>
+                {formWarn
+                  ? "You can not save your changes yet: Name & Catalog-number are mandatory !"
+                  : ""}
+              </Typography>
+
               <StoreTable
                 isLoadingCallback={setLoading}
                 saveClick={saveClick}
@@ -82,6 +90,7 @@ function App() {
                 newItemClick={newItemClick}
                 setModified={(change) => setModified(change)}
                 searchData={searchData}
+                formWarnCallback={setFormWarn}
               />
             </>
           )}
