@@ -3,7 +3,7 @@ import Input from "@mui/joy/Input";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Textarea from "@mui/joy/Textarea";
-import { Edit, Delete, Close, DeleteForever, Add } from "@mui/icons-material";
+import { Edit, Delete, Add, Done } from "@mui/icons-material";
 import IconButton from "@mui/joy/IconButton";
 import { Box } from "@mui/joy";
 
@@ -14,15 +14,18 @@ export default function TableItem(props) {
   const [catalogNumber, setCtk] = useState(props.catalogNumber);
   const [type, setType] = useState(props.type);
   const [marketDate, setDate] = useState(props.marketDate);
-  const [editEnabled, setEdit] = useState(false);
+  const [editEnabled, setEdit] = useState(props.newItem ? true : false);
   const [onlineData, setOnlineData] = useState(props); // a copy of the data that is updated on the server's DB
   const [isModified, setModified] = useState(false);
   const [isDeleted, setDelete] = useState(false);
+  const [newItem, setNew] = useState(false);
   const mountedRef = useRef();
+  const mountedRef2 = useRef();
 
   const getItem = () => {
     return {
       _id: props._id,
+      id: props.id,
       name: name,
       desc: desc,
       catalogNumber: catalogNumber,
@@ -31,9 +34,22 @@ export default function TableItem(props) {
     };
   };
   useEffect(() => {
+    console.log("tableItem - isupdated use effect called");
+    if (!mountedRef2.current) {
+      mountedRef2.current = true;
+      return;
+    }
+    if (props.isUpdated) {
+      setDelete(false);
+      setNew(false);
+      setModified(false);
+    }
+  }, [props.isUpdated]);
+  useEffect(() => {
     if (!mountedRef.current) {
       return;
     }
+
     if (
       onlineData.name !== name ||
       onlineData.desc !== desc ||
@@ -55,7 +71,7 @@ export default function TableItem(props) {
       return;
     }
     if (isDeleted) {
-      props.deleteItem(props._id, getItem);
+      props.deleteItem(props._id, getItem());
     } else {
       props.abortDeleteItem(props._id);
     }
@@ -63,6 +79,9 @@ export default function TableItem(props) {
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
+      if (props.newItem) {
+        setNew(true);
+      }
       return;
     }
   }, []);
@@ -72,7 +91,13 @@ export default function TableItem(props) {
         transition: "all .5s ease",
         WebkitTransition: "all .5s ease",
         MozTransition: "all .5s ease",
-        backgroundColor: isDeleted ? "red" : isModified ? "orange" : "white",
+        backgroundColor: isDeleted
+          ? "red"
+          : newItem
+          ? "green"
+          : isModified
+          ? "orange"
+          : "white",
       }}
     >
       {/* id -  read only */}
@@ -146,7 +171,7 @@ export default function TableItem(props) {
       <td>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <IconButton onClick={() => setEdit(!editEnabled)}>
-            {editEnabled ? <Close /> : <Edit />}
+            {editEnabled ? <Done /> : <Edit />}
           </IconButton>
           <IconButton onClick={() => setDelete(!isDeleted)}>
             {isDeleted ? <Add /> : <Delete />}
