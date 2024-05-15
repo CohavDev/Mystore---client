@@ -16,8 +16,13 @@ export default function StoreTable(props) {
   const mountedRef = useRef();
   const mountedRef2 = useRef();
 
+  const loadDataFromServer = () => {
+    loadDataAPI().then((data) => {
+      setData(data);
+    });
+  };
   // ####   -----   Callback Methods  ----   ####
-  const InsertEditArrayCallback = useCallback(
+  const InsertEditCallback = useCallback(
     (_id, item) => {
       delete item["_id"];
       setModifiedData((prevVal) => ({ ...prevVal, [_id]: item }));
@@ -25,7 +30,7 @@ export default function StoreTable(props) {
     [modifiedData]
   );
   //abort edit of specific item
-  const deleteEditArrayCallback = useCallback(
+  const deleteEditCallback = useCallback(
     (_id) => {
       setModifiedData((prevVal) => {
         const temp = { ...prevVal };
@@ -35,23 +40,19 @@ export default function StoreTable(props) {
     },
     [modifiedData]
   );
-  const loadDataFromServer = () => {
-    loadDataAPI().then((data) => {
-      setData(data);
-    });
-  };
+  
 
-  const deleteItemCallback = (_id, item) => {
+  const insertDeleteCallback = useCallback((_id, item) => {
     delete item["_id"];
     setGarbageCan((prevVal) => ({ ...prevVal, [_id]: item }));
-  };
+  },[garbageCan]);
   //abort deletion of specific item
-  const abortItemDeleteCallback = (_id) => {
+  const abortDeleteCallback = useCallback((_id) => {
     const temp = { ...garbageCan };
     delete temp[_id];
     setGarbageCan(temp);
-  };
-  const newItemCallback = () => {
+  },[garbageCan]);
+  const newItemCallback = useCallback(() => {
     console.log("adding");
 
     const visualId = itemsArray.length + 1;
@@ -65,7 +66,7 @@ export default function StoreTable(props) {
         isUpdated={isUIUpdated}
         formWarn={(warn) => props.formWarnCallback(warn)}
         _id={tempId}
-        key={visualId}
+        key={tempId}
         id={visualId} //id for visual order only
         name={""}
         desc={""}
@@ -105,7 +106,7 @@ export default function StoreTable(props) {
     };
     setNewItems((prevItems) => ({ ...prevItems, [tempId]: newItemJson }));
     setArray((prevArray) => [...prevArray, newItem]);
-  };
+  },[itemsArray,isUIUpdated,newItems]);
   // ####   -------     UseEffect Hooks    --------    ####
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export default function StoreTable(props) {
     }
     mountedRef.current = true;
   }, []);
+  // updating data from server
   useEffect(() => {
     if (!mountedRef.current) {
       return;
@@ -187,12 +189,13 @@ export default function StoreTable(props) {
     let visualId = 0;
     for (const counter in data) {
       const item = data[counter];
+      console.log(item["name"])
       visualId++;
       tempArray.push(
         <TableItem
           isUpdated={isUIUpdated}
           formWarn={(warn) => props.formWarnCallback(warn)}
-          key={visualId}
+          key={item["_id"]}
           id={visualId} //id for visual order only
           _id={item["_id"]} //internal id - unique!
           name={item["name"]}
@@ -200,10 +203,10 @@ export default function StoreTable(props) {
           catalogNumber={item["catalogNumber"]}
           type={item["type"]}
           marketDate={item["marketDate"]}
-          notifyModifiedEdit={(_id, item) => InsertEditArrayCallback(_id, item)}
-          deleteItem={(_id, item) => deleteItemCallback(_id, item)}
-          abortDeleteItem={(_id) => abortItemDeleteCallback(_id)}
-          abortModifiedEdit={(_id) => deleteEditArrayCallback(_id)}
+          notifyModifiedEdit={(_id, item) => InsertEditCallback(_id, item)}
+          deleteItem={(_id, item) => insertDeleteCallback(_id, item)}
+          abortDeleteItem={(_id) => abortDeleteCallback(_id)}
+          abortModifiedEdit={(_id) => deleteEditCallback(_id)}
         ></TableItem>
       );
       setArray([...tempArray]);
